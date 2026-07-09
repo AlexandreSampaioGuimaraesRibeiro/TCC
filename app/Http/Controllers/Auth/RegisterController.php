@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Facades\Hash;
 
 class RegisterController extends Controller
 {
@@ -52,6 +53,8 @@ class RegisterController extends Controller
             'lgpd'       => ['accepted'],
         ];
 
+        
+
         if ($isProfessional) {
             $rules['categories']   = ['required', 'array', 'min:1'];
             $rules['categories.*'] = ['exists:categories,id'];
@@ -78,11 +81,13 @@ class RegisterController extends Controller
             }
         }
 
+        
+
         $user = DB::transaction(function () use ($request, $data, $isProfessional) {
             $user = User::create([
                 'name'             => $data['name'],
                 'email'            => $data['email'],
-                'password'         => $data['password'],
+                'password'         => Hash::make($data['password']),
                 'cpf'              => preg_replace('/\D/', '', $data['cpf']),
                 'phone'            => preg_replace('/\D/', '', $data['phone']),
                 'birth_date'       => $data['birth_date'],
