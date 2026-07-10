@@ -18,15 +18,13 @@ class User extends Authenticatable implements MustVerifyEmail
 
     protected $hidden = ['password', 'remember_token'];
 
-    protected function casts(): array
-    {
-        return [
+    protected $casts=[    
             'email_verified_at' => 'datetime',
             'lgpd_accepted_at'  => 'datetime',
             'birth_date'        => 'date',
             'password'          => 'hashed',
         ];
-    }
+    
 
     public function address()
     {

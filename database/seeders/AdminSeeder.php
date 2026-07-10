@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
-
+use Illuminate\Support\Facades\Hash;
 class AdminSeeder extends Seeder
 {
     public function run(): void
@@ -13,7 +13,7 @@ class AdminSeeder extends Seeder
             ['email' => 'admin@beework.com.br'],
             [
                 'name'              => 'Administrador Beework',
-                'password'          => 'Beework@2026', // TROCAR EM PRODUÇÃO
+                'password'          => Hash::make('Beework@2026'), // TROCAR EM PRODUÇÃO
                 'cpf'               => '00000000000',
                 'phone'             => '31999999999',
                 'birth_date'        => '1990-01-01',
