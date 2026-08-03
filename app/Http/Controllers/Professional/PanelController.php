@@ -37,11 +37,15 @@ class PanelController extends Controller
             ->whereIn('status', ['accepted', 'pending'])
             ->with(['client', 'category'])->get()
             ->map(fn ($b) => [
-                'id'    => 'b'.$b->id,
-                'title' => ($b->status === 'pending' ? '(Pendente) ' : '').$b->category->name.' — '.$b->client->name,
-                'start' => $b->scheduled_date->format('Y-m-d').'T'.$b->scheduled_time,
-                'color' => $b->status === 'pending' ? '#F5D78A' : '#E8B33C',
+                'id'        => 'b'.$b->id,
+                'title'     => $b->category->name,
+                'start'     => $b->scheduled_date->format('Y-m-d').'T'.$b->scheduled_time,
+                'color'     => $b->status === 'pending' ? '#F5D78A' : '#E8B33C',
                 'textColor' => '#1E1E1E',
+                'extendedProps' => [
+                    'cliente'   => $b->client->name,
+                    'pendente'  => $b->status === 'pending',
+                ],
             ]);
 
         $blocks = $profile->blocks()->get()->map(fn ($bl) => [
@@ -53,7 +57,8 @@ class PanelController extends Controller
             'end'    => $bl->end_time ? $bl->date->format('Y-m-d').'T'.$bl->end_time : null,
             'allDay' => is_null($bl->start_time),
             'color'  => '#9CA3AF',
-            'blockId' => $bl->id,
+            'textColor' => '#1E1E1E',
+            'extendedProps' => ['blockId' => $bl->id],
         ]);
 
         return response()->json($bookings->concat($blocks)->values());

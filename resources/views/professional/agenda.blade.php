@@ -5,6 +5,25 @@
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.15/locales/pt-br.global.min.js"></script>
+<style>
+    /* Evento com conteúdo customizado — sem texto cortado feio */
+    .fc .fc-event-main { padding: 2px 4px; overflow: hidden; }
+    .fc-ev { line-height: 1.2; overflow: hidden; }
+    .fc-ev .fc-ev-time { font-weight: 700; font-size: .72rem; }
+    .fc-ev .fc-ev-title { font-size: .72rem; font-weight: 600;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .fc-ev .fc-ev-sub { font-size: .68rem; opacity: .85;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    /* Slots mais altos = evento de 1h cabe as linhas */
+    .fc .fc-timegrid-slot { height: 2.6rem; }
+    /* Toolbar quebra melhor no mobile */
+    @media (max-width: 640px) {
+        .fc .fc-toolbar { flex-direction: column; gap: .5rem; }
+        .fc .fc-toolbar-title { font-size: 1.05rem; }
+    }
+    /* All-day (bloqueio) também com ellipsis */
+    .fc-daygrid-event .fc-event-title { overflow: hidden; text-overflow: ellipsis; }
+</style>
 @endpush
 
 @section('content')
@@ -25,7 +44,9 @@
             <span class="inline-block h-3 w-3 rounded-full bg-gray-400 align-middle"></span> bloqueado
         </p>
 
-        <div id="calendar" class="mt-4 bg-white border border-bee-cream rounded-bee p-4 shadow-sm"></div>
+        <div class="mt-4 bg-white border border-bee-cream rounded-bee p-2 sm:p-4 shadow-sm overflow-x-auto">
+            <div id="calendar" class="min-w-[640px] sm:min-w-0"></div>
+        </div>
     </div>
 </div>
 
@@ -83,7 +104,31 @@ document.addEventListener('DOMContentLoaded', () => {
         slotMinTime: '06:00:00',
         slotMaxTime: '22:00:00',
         height: 'auto',
+        expandRows: true,
+        nowIndicator: true,
         events: '{{ route('painel.agenda.eventos') }}',
+
+        eventContent(arg) {
+            const p = arg.event.extendedProps;
+            const wrap = document.createElement('div');
+            wrap.className = 'fc-ev';
+
+            // Bloqueio (all-day): só o motivo
+            if (p.blockId) {
+                wrap.innerHTML = `<div class="fc-ev-title">🚫 ${arg.event.title}</div>`;
+                return { domNodes: [wrap] };
+            }
+
+            const hora = arg.timeText || '';
+            const tag  = p.pendente ? '⏳ ' : '';
+            wrap.innerHTML = `
+                <div class="fc-ev-time">${hora}</div>
+                <div class="fc-ev-title">${tag}${arg.event.title}</div>
+                ${p.cliente ? `<div class="fc-ev-sub">${p.cliente}</div>` : ''}
+            `;
+            return { domNodes: [wrap] };
+        },
+
         dateClick(info) {
             // clique em dia/horário vazio abre o modal de bloqueio já preenchido
             document.getElementById('block-date').value = info.dateStr.substring(0, 10);
